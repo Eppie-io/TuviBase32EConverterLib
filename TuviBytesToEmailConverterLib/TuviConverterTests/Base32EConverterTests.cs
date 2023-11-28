@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //   Copyright 2022 Eppie (https://eppie.io)
 //
 //   Licensed under the Apache License, Version 2.0(the "License");
@@ -30,7 +30,7 @@ namespace Tuvi.Base32EConverterTests
         public void BytesToString_CorrectConverting(byte[] array, string expectedResult)
         {
             var actualResult = Base32EConverter.ConvertBytesToEmailName(array);
-            Assert.AreEqual(expectedResult, actualResult);
+            Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
         [TestCase(new byte[] { 0, 0, 1 })]
@@ -45,7 +45,7 @@ namespace Tuvi.Base32EConverterTests
         public void BytesToStringAndToBytes_CorrectConverting(byte[] array)
         {
             var actualResult = Base32EConverter.ConvertStringToByteArray(Base32EConverter.ConvertBytesToEmailName(array));
-            Assert.AreEqual(array, actualResult);
+            Assert.That(actualResult, Is.EqualTo(array));
         }
 
         [TestCase("aaah9", new byte[] { 0, 0, 255 })]
@@ -55,7 +55,7 @@ namespace Tuvi.Base32EConverterTests
         public void StringToBytes_CorrectConverting(string name, byte[] expectedResult)
         {
             var actualResult = Base32EConverter.ConvertStringToByteArray(name);
-            Assert.AreEqual(expectedResult, actualResult);
+            Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
         [TestCase("abc0")]
