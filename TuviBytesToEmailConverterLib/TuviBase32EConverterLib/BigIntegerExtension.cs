@@ -14,6 +14,7 @@
 //   limitations under the License.
 ///////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -33,6 +34,11 @@ namespace Tuvi.Base32EConverterLib
         /// <returns>Resulting BigInteger.</returns>
         public static BigInteger BigEndianConcatBytes(this BigInteger number, byte[] array)
         {
+            if (array is null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             for (int i = 0; i < array.Length; i++)
             {
                 number = number << 8;
