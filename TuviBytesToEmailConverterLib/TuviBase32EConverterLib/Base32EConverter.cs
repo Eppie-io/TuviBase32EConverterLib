@@ -1,7 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-//   Copyright 2022 Eppie (https://eppie.io)
+//   Copyright 2025 Eppie (https://eppie.io)
 //
-//   Licensed under the Apache License, Version 2.0(the "License");
+//   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
 //   You may obtain a copy of the License at
 //
@@ -20,8 +20,9 @@ using System.Numerics;
 namespace Tuvi.Base32EConverterLib
 {
     /// <summary>
-    /// Allows to convert byte array to a string of symbols that can be an email name and vice versa. 
-    /// Symbols dictionary is [abcdefghijkmnpqrstuvwxyz23456789]. 1 and l, 0 and o looks similar so they were deleted.
+    /// Provides methods to encode a byte array into an email-safe Base32 string and decode it back.
+    /// The Base32E alphabet ([abcdefghijkmnpqrstuvwxyz23456789]) excludes visually similar characters (1, l, 0, o)
+    /// to ensure compatibility with email naming conventions.
     /// </summary>
     public static class Base32EConverter
     {
@@ -31,11 +32,13 @@ namespace Tuvi.Base32EConverterLib
         private const string Base32EDictionary = "abcdefghijkmnpqrstuvwxyz23456789";
 
         /// <summary>
-        /// Convert byte array to a string
+        /// Encodes a byte array into an email-safe Base32 string.
         /// </summary>
-        /// <param name="array">Converting byte array.</param>
-        /// <returns>String that can be an email's name.</returns>
-        public static string ConvertBytesToEmailName(byte[] array)
+        /// <param name="array">The byte array to encode.</param>
+        /// <returns>An email-safe string encoded in Base32E format.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="array"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="array"/> is empty or would produce a string longer than 64 characters.</exception>
+        public static string ToEmailBase32(byte[] array)
         {
             if (array is null)
             {
@@ -44,7 +47,7 @@ namespace Tuvi.Base32EConverterLib
 
             if (array.Length < 1)
             {
-                throw new ArgumentException("Array should contain at least 1 element.");
+                throw new ArgumentException("The input array must contain at least one element.", nameof(array));
             }
 
             byte[] fiveBitsArray = ConvertEightToFiveBits(array);
@@ -57,11 +60,13 @@ namespace Tuvi.Base32EConverterLib
         }
 
         /// <summary>
-        /// Converts string to an byte array.
+        /// Decodes an email-safe Base32 string into a byte array.
         /// </summary>
-        /// <param name="name">String of allowed symbols.</param>
-        /// <returns>Array of bytes.</returns>
-        public static byte[] ConvertStringToByteArray(string name)
+        /// <param name="name">The Base32E-encoded string to decode.</param>
+        /// <returns>The decoded byte array.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is empty, contains only whitespace, exceeds 64 characters, or contains invalid characters.</exception>
+        public static byte[] FromEmailBase32(string name)
         {
             if (name is null)
             {
@@ -70,12 +75,12 @@ namespace Tuvi.Base32EConverterLib
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("Email's name can not be empty or whitespace.");
+                throw new ArgumentException("The input string cannot be empty or consist only of whitespace.", nameof(name));
             }
 
             if (name.Length > MaxEmailNameSize)
             {
-                throw new ArgumentException($"Email's name can not be longer than {MaxEmailNameSize} symbols.", nameof(name));
+                throw new ArgumentException($"The input string cannot exceed {MaxEmailNameSize} characters.", nameof(name));
             }
 
             char[] symbolsArray = name.ToCharArray();
@@ -90,10 +95,12 @@ namespace Tuvi.Base32EConverterLib
         }
 
         /// <summary>
-        /// Divides sequence of bits (initial array) into groups of 5 bits.
+        /// Converts a byte array into an array of 5-bit groups for Base32E encoding.
         /// </summary>
-        /// <param name="array">Initial array.</param>
-        /// <returns>Array of 5-bit groups.</returns>
+        /// <param name="array">The byte array to convert.</param>
+        /// <returns>An array of 5-bit values.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="array"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="array"/> is empty or would produce a string longer than 64 characters.</exception>
         private static byte[] ConvertEightToFiveBits(byte[] array)
         {
             if (array is null)
@@ -103,7 +110,7 @@ namespace Tuvi.Base32EConverterLib
 
             if (array.Length < 1)
             {
-                throw new ArgumentException("Array should contain at least 1 element.");
+                throw new ArgumentException("The input array must contain at least one element.", nameof(array));
             }
 
             var sizeInBits = array.Length * ByteSize;
@@ -114,7 +121,7 @@ namespace Tuvi.Base32EConverterLib
             }
             if (resultSizeInBytes > MaxEmailNameSize)
             {
-                throw new ArgumentException($"Initial array is too big to create correct email's name (name can not be longer than {MaxEmailNameSize} symbols).", nameof(array));
+                throw new ArgumentException($"The input array is too large to produce a valid email-safe string (maximum {MaxEmailNameSize} characters).", nameof(array));
             }
 
             int currentPosition = resultSizeInBytes - 1;
@@ -133,10 +140,13 @@ namespace Tuvi.Base32EConverterLib
         }
 
         /// <summary>
-        /// Concats groups of 5 bits into a sequense. Represents it as an byte array (groups of 8 bits).
+        /// Combines an array of 5-bit groups into a byte array.
         /// </summary>
-        /// <param name="array">Array of 5-bit groups.</param>
-        /// <returns>Array of bytes (8-bit groups).</returns>
+        /// <param name="array">The array of 5-bit values.</param>
+        /// <returns>The resulting byte array.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="array"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="array"/> exceeds 64 elements.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when any element in <paramref name="array"/> is greater than 31.</exception>
         private static byte[] ConvertFiveToEightBits(byte[] array)
         {
             if (array is null)
@@ -146,7 +156,7 @@ namespace Tuvi.Base32EConverterLib
 
             if (array.Length > MaxEmailNameSize)
             {
-                throw new ArgumentException($"Email's name can not be longer than {MaxEmailNameSize} symbols.", nameof(array));
+                throw new ArgumentException($"The input array cannot exceed {MaxEmailNameSize} elements.", nameof(array));
             }
 
             BigInteger number = 0;
@@ -157,7 +167,7 @@ namespace Tuvi.Base32EConverterLib
                 if (array[i] >= 32)
                 {
                     throw new ArgumentOutOfRangeException(nameof(array),
-                        $"Array at index {i} has wrong value. Allowed values are from 0 to 31.");
+                        $"Element at index {i} is invalid. Values must be between 0 and 31.");
                 }
                 number = number << FiveBitsSize;
                 number |= array[i];
@@ -179,26 +189,35 @@ namespace Tuvi.Base32EConverterLib
             }
         }
 
+        /// <summary>
+        /// Converts a 5-bit value to the corresponding Base32E character.
+        /// </summary>
+        /// <param name="byteValue">The 5-bit value (0–31) to convert.</param>
+        /// <returns>The corresponding character from the Base32E alphabet.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="byteValue"/> is greater than 31.</exception>
         private static char ConvertByteToSymbol(byte byteValue)
         {
             if (byteValue >= 32)
             {
-                throw new ArgumentOutOfRangeException(nameof(byteValue));
+                throw new ArgumentOutOfRangeException(nameof(byteValue), "Value must be between 0 and 31.");
             }
             return Base32EDictionary[byteValue];
         }
 
+        /// <summary>
+        /// Converts a Base32E character to its corresponding 5-bit value.
+        /// </summary>
+        /// <param name="symbol">The Base32E character to convert.</param>
+        /// <returns>The corresponding 5-bit value (0–31).</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="symbol"/> is not in the Base32E alphabet.</exception>
         private static byte ConvertSymbolToBits(char symbol)
         {
             int value = Base32EDictionary.IndexOf(symbol);
             if (value == -1)
             {
-                throw new ArgumentOutOfRangeException(nameof(symbol));
+                throw new ArgumentOutOfRangeException(nameof(symbol), $"Character '{symbol}' is not in the Base32E alphabet.");
             }
-            else
-            {
-                return (byte)value;
-            }
+            return (byte)value;
         }
     }
 }
