@@ -37,7 +37,7 @@ Code examples
 ```
 byte[] array = new byte[]{31,32,33};
 string result = Base32EConverter.ToEmailBase32(array);
-// result = "b8ibb"`
+// result = "b8ibb"
 
 string name = "friend";
 byte[] result = Base32EConverter.FromEmailBase32(name);
