@@ -32,6 +32,36 @@ namespace Tuvi.Base32EConverterLib
         private const string Base32EDictionary = "abcdefghijkmnpqrstuvwxyz23456789";
 
         /// <summary>
+        /// Returns true if the provided string consists only of Base32E alphabet characters.
+        /// Does not enforce any length constraints beyond non-null/non-empty.
+        /// </summary>
+        /// <param name="value">String to check.</param>
+        /// <param name="caseInsensitive">If true, comparison is case-insensitive.</param>
+        public static bool IsEmailBase32(string value, bool caseInsensitive = true)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            var alphabet = Base32EDictionary;
+            for (int i = 0; i < value.Length; i++)
+            {
+                char c = value[i];
+                if (caseInsensitive)
+                {
+                    c = char.ToLowerInvariant(c);
+                }
+                if (alphabet.IndexOf(c) == -1)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Encodes a byte array into an email-safe Base32 string.
         /// </summary>
         /// <param name="array">The byte array to encode.</param>
